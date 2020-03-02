@@ -8,71 +8,71 @@
 
 using namespace std;
 const Dimensions GUI::screenDimensions{ 336,224 };
-GUI::GUI(){
+GUI::GUI() {
 
 	//Initialize the window
 	window = nullptr;
 
-    //Start-up the GUI!
+	//Start-up the GUI!
 	initGUI();
 
 	//Load in all the images and clip (if necessary)
 	loadMedia();
 
 	//Exit criteria
-	quit=false;
+	quit = false;
 
 }
 
-GUI::~GUI(){
+GUI::~GUI() {
 	cleanUp();
 }
 
-int GUI::observeEvent(){
-	return(SDL_PollEvent( &event ));
+int GUI::observeEvent() {
+	return(SDL_PollEvent(&event));
 }
 
-bool GUI::quitGame(){
-	return(event.type == SDL_QUIT );
+bool GUI::quitGame() {
+	return(event.type == SDL_QUIT);
 }
 
-void GUI::initGUI(){
+void GUI::initGUI() {
 
 	//Initialize all SDL subsystems
-    if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
+	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 
-		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 		exit(1);
 	}
 
 	//Construct and check window construction
 	window = SDL_CreateWindow("Castlevania II Clone",
-					SDL_WINDOWPOS_UNDEFINED,
-					SDL_WINDOWPOS_UNDEFINED,
-                    screenDimensions.width, screenDimensions.height, SDL_WINDOW_SHOWN);
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		screenDimensions.width, screenDimensions.height, SDL_WINDOW_SHOWN);
 
-	if(window==nullptr){
+	if (window == nullptr) {
 
-			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
-			exit(1);
+		printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+		exit(1);
 	}
 
 	//Construct and check renderer construction
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if(renderer == nullptr){
+	if (renderer == nullptr) {
 
-		printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+		printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
 		exit(1);
 
 	}
 
 }
 
-void GUI::loadMedia(){
+void GUI::loadMedia() {
 
 	//Open Samus Sprite Sheet Forward
-	objectTextures[Type::player]= new Texture();
-	objectTextures[Type::player]->load(renderer,"./Assets/Images/simon.png");
+	objectTextures[Type::player] = new Texture();
+	objectTextures[Type::player]->load(renderer, "./Assets/Images/simon.png");
 
 	//Parse Samus Sprite Sheet Forward
 
@@ -191,7 +191,7 @@ void GUI::loadMedia(){
 
 	//Create the rest of the textures
 	objectTextures[Type::block] = new Texture();
-	objectTextures[Type::block]->load(renderer,"./Assets/Images/block.png");
+	objectTextures[Type::block]->load(renderer, "./Assets/Images/block.png");
 
 	objectTextures[Type::belowBlock] = new Texture();
 	objectTextures[Type::belowBlock]->load(renderer, "./Assets/Images/belowBlock.png");
@@ -214,43 +214,42 @@ void GUI::loadMedia(){
 
 }
 
-void GUI::cleanUp(){
+void GUI::cleanUp() {
 
 	//Free the window
 	SDL_DestroyWindow(window);
-    window = NULL;
+	window = NULL;
 
-    //Free the renderer
-   	SDL_DestroyRenderer(renderer);
-    renderer = NULL;
+	//Free the renderer
+	SDL_DestroyRenderer(renderer);
+	renderer = NULL;
 
-    //Free loaded images
+	//Free loaded images
 	for (auto image : objectTextures)
 	{
 		image.second->free();
 	}
 
-    //Quit SDL Subsystems
-   	IMG_Quit();
-    SDL_Quit();
+	//Quit SDL Subsystems
+	IMG_Quit();
+	SDL_Quit();
 
 }
 
-void GUI::displayGameState(const int numObjects, const Object objects[]){
+void GUI::displayGameState(const int numObjects, const Object objects[]) {
 
 	//Clear screen
-	SDL_SetRenderDrawColor(renderer,0,0,0,255);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
 
-    //Render Blocks
-	for (int i=0; i < numObjects; i++) {
-		if (objects[i].type == Type::player)
-		{
+	//Render Blocks
+	for (int i = 0; i < numObjects; i++) {
+		if (objects[i].type == Type::player) {
 			//Render Player
 			objectTextures[objects[i].type]->render(renderer, objects[i].position.x, objects[i].position.y, &simonClips[objects[i].spriteID]);
 		}
-		else
-		{
+		else if (objects[i].type == Type::none) {}
+		else {
 			//render anything else!
 			objectTextures[objects[i].type]->render(renderer, objects[i].position.x, objects[i].position.y, NULL);
 		}
@@ -261,13 +260,17 @@ void GUI::displayGameState(const int numObjects, const Object objects[]){
 
 }
 
-Dimensions GUI::getObjectDimensions(const Object & object) const
+Dimensions GUI::getObjectDimensions(const Object& object) const
 {
 	Dimensions dimension;
 	if (object.type == Type::player)
 	{
 		dimension.width = simonClips[object.spriteID].w;
 		dimension.height = simonClips[object.spriteID].h;
+	}
+	else if (object.type == Type::none) {
+		dimension.width = 0;
+		dimension.height = 0;
 	}
 	else
 	{
